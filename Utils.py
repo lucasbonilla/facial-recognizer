@@ -14,3 +14,4 @@ CAMURL = 0
 length = 100
 width = length
 IM_SIZE = (length, width)
+
