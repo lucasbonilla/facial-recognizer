@@ -5,6 +5,7 @@ import cv2
 import Capture
 import FaceDB
 import Utils as ut
+import os
 
 model = cv2.face.createLBPHFaceRecognizer()
 model.load(ut.MODELFILE)
@@ -20,7 +21,6 @@ def predict(face):
 
 def main():
     confiability = []
-    ref_arquivo = open(ut.LOG, "w")
     last = ""
     recognize = True
     while True:
@@ -40,8 +40,6 @@ def main():
                 if conf <= 100:  # Confiança menor igual que 60 é um positivo
                     print("Nome: %s, Confiança: %s" % (res, conf))
                     if last != res:
-                        ref_arquivo.write(
-                            "Nome: " + res + " Confiança:  " + str(conf) + "\n")
                         last = res
                     # print('Flush')
                     confiability.clear()
@@ -68,7 +66,6 @@ def main():
                     # Se reconheceu 10 imagens seguidas com confiabilidade menor que 60 por dez vezes seguidas
                     # entende-se que a base não conhece a face
                     if len(confiability) > 20:
-                        ref_arquivo.write("\nNova pessoa detectada...\n\n")
                         # print("I don't know you...")
                         recognize = False  # Seta um False
                         confiability.clear()
@@ -83,7 +80,7 @@ def main():
             if time_exceeded:
                 continue
             FaceDB.atualize_db()
-            FaceDB.train()
+            FaceDB.update()
 
 
 if __name__ == '__main__':
