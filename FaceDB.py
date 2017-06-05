@@ -19,6 +19,7 @@ def update_model():
     images, labels = load_images_from_db()
     model = cv2.face.createLBPHFaceRecognizer(threshold=200.0)
     model.update(images, labels)
+    model.save(ut.MODELFILE)
 
 
 # Realiza o treino da base
@@ -34,7 +35,7 @@ def train():
 
 # Carrega o path para as tabelas
 def load_images_to_db():
-    for dir_name, dir_names, file_names in os.walk(ut.IMAGESPATH, topdown=False):
+    for dir_name, dir_names, file_names in os.walk(ut.NEWIMAGESPATH, topdown=False):
         for sub_dir_name in dir_names:
             subject_path = os.path.join(dir_name, sub_dir_name)
             label, p = Label.get_or_create(name=sub_dir_name)
@@ -72,7 +73,7 @@ class Label(BaseModel):
     name = peewee.CharField()
 
     def persist(self):
-        path = os.path.join(ut.IMAGESPATH, self.name)
+        path = os.path.join(ut.NEWIMAGESPATH, self.name)
         if os.path.exists(path) and len(os.listdir(path)) >= 10:
             shutil.rmtree(path)
         if not os.path.exists(path):
@@ -86,7 +87,7 @@ class Image(BaseModel):
     label = peewee.ForeignKeyField(Label)
 
     def persist(self, cv_image):
-        path = os.path.join(ut.IMAGESPATH, self.label.name)
+        path = os.path.join(ut.NEWIMAGESPATH, self.label.name)
         nr_of_images = len(os.listdir(path))
         if nr_of_images >= 10:
             return 'Done'
@@ -109,12 +110,12 @@ def atualize_db():
 
 
 if __name__ == '__main__':
-    print('Iniciando')
-    if os.path.isfile(ut.MODELFILE) is False:
-        with open(ut.MODELFILE, "a") as arq:
-            arq.close()
-    print('Atualizando base de dados')
-    atualize_db()
+    # print('Iniciando')
+    # if os.path.isfile(ut.MODELFILE) is False:
+    #     with open(ut.MODELFILE, "a") as arq:
+    #         arq.close()
+    # print('Atualizando base de dados')
+    # atualize_db()
     ini = t.time()
     print('Treinamento')
     train()

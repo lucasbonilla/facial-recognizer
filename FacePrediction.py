@@ -15,7 +15,7 @@ def predict(face):
     return result, conf
 
 
-def main1():
+def main():
     cam = cv2.VideoCapture(0)
     while True:
         ret, face = cam.read()
@@ -27,4 +27,4 @@ def main1():
 
 
 if __name__ == '__main__':
-    main1()
+    main()

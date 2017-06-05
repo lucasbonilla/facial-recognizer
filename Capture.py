@@ -46,7 +46,7 @@ def detect_faces(img):
 
 
 def input_name():
-    dirs = os.listdir(ut.IMAGESPATH)
+    dirs = os.listdir(ut.NEWIMAGESPATH)
     directory = [re.split(r'(\d+)', sa) for sa in dirs]
     print(directory)
     index = 0
@@ -61,7 +61,7 @@ def capture():
     i = 0
     name = input('Nome: ')
 
-    new_path = ut.IMAGESPATH + '/' + name
+    new_path = ut.NEWIMAGESPATH + '/' + name
     if not os.path.exists(new_path):
         os.makedirs(new_path)
     cam = cv2.VideoCapture(0)

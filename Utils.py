@@ -2,6 +2,7 @@ CASCADEPATHFRONTALFACE = '/home/lucas/PycharmProjects/arquivos/database/cascade/
 CASCADEPATHPROFILEFACE = '/home/lucas/PycharmProjects/arquivos/database/cascade/profileface.xml'
 DBPATH = '/home/lucas/PycharmProjects/arquivos/database/db/images.db'
 IMAGESPATH = '/home/lucas/PycharmProjects/arquivos/database/images'
+NEWIMAGESPATH = '/home/lucas/PycharmProjects/arquivos/database/new_images'
 MODELFILE = '/home/lucas/PycharmProjects/arquivos/database/model.mdl'
 LOG = '/home/lucas/PycharmProjects/arquivos/database/db/log.txt'
 CAMURL = 0

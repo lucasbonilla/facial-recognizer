@@ -37,8 +37,8 @@ def main():
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
                 res, conf = predict(face)  # Predição
-                if conf <= 100:  # Confiança menor igual que 60 é um positivo
-                    print("Nome: %s, Confiança: %s" % (res, conf))
+                print("Nome: %s, Confiança %s" % (res, conf))
+                if conf <= 90:  # Confiança menor igual que 60 é um positivo
                     if last != res:
                         last = res
                     # print('Flush')
@@ -54,7 +54,7 @@ def main():
 
                     continue
                 else:  # Confiança maior que 60 pode ser um positivo mas não é confiável
-                    # print("Nome: %s, Confiança: %s" % (res, conf))
+
                     confiability.append((res, conf, t.time()))
                     index = len(confiability) - 1
 
@@ -80,7 +80,7 @@ def main():
             if time_exceeded:
                 continue
             FaceDB.atualize_db()
-            FaceDB.update()
+            FaceDB.update_model()
 
 
 if __name__ == '__main__':
