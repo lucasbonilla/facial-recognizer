@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import peewee
 import time as t
+import geradorcpf
 
 import Utils as ut
 
@@ -27,24 +28,34 @@ def train():
     images, labels = load_images_from_db()
     model = cv2.face.createLBPHFaceRecognizer(threshold=200.0)
     print("Treinando a base")
-    model.train(images, labels)
+    model.update(images, labels)
 
     model.save(ut.MODELFILE)
     print("It's done!")
 
 
 # Carrega o path para as tabelas
-def load_images_to_db():
-    for dir_name, dir_names, file_names in os.walk(ut.NEWIMAGESPATH, topdown=False):
+def load_images_to_db(name_entrada, cpf_entrada):
+    for dir_name, dir_names, file_names in os.walk(ut.IMAGESPATHPARTIAL, topdown=False):
         for sub_dir_name in dir_names:
             subject_path = os.path.join(dir_name, sub_dir_name)
-            label, p = Label.get_or_create(name=sub_dir_name)
+            if len(name_entrada) is 0:
+                name_entrada = sub_dir_name
+            if len(cpf_entrada) is 0:
+                cpf = geradorcpf.gerar()
+            else:
+                cpf = cpf_entrada
+            label, p = Label.get_or_create(name=name_entrada, cpf=cpf)
             label.save()
             for filename in os.listdir(subject_path):
-                path = os.path.abspath(os.path.join(subject_path, filename))
-                # print('saving path %s' % path)
+                finalpath = ut.IMAGESPATHFINAL+'/'+sub_dir_name
+                path = os.path.abspath(os.path.join(finalpath, filename))
                 image, p = Image.get_or_create(path=path, label=label)
+                if not os.path.exists(finalpath):
+                    os.makedirs(finalpath)
+                shutil.move(subject_path+'/'+filename, finalpath+'/'+filename)
                 image.save()
+            shutil.rmtree(subject_path)
 
 
 # Carrega o path do banco
@@ -71,15 +82,16 @@ class BaseModel(peewee.Model):
 
 class Label(BaseModel):
     name = peewee.CharField()
+    cpf = peewee.IntegerField()
 
     def persist(self):
-        path = os.path.join(ut.NEWIMAGESPATH, self.name)
+        path = os.path.join(ut.IMAGESPATHPARTIAL, self.name)
         if os.path.exists(path) and len(os.listdir(path)) >= 10:
             shutil.rmtree(path)
         if not os.path.exists(path):
             print('Created directory: %s' % self.name)
             os.makedirs(path)
-        Label.get_or_create(name=self.name)
+        Label.get_or_create(name=self.name, cpf=self.cpf)
 
 
 class Image(BaseModel):
@@ -99,23 +111,23 @@ class Image(BaseModel):
         self.save()
 
 
-def atualize_db():
-    Image().delete()
-    Label().delete()
+def atualize_db(name_entrada, cpf_entrada):
+    # Image().delete()
+    # Label().delete()
     print('Iniciando Load')
     ini = t.time()
-    load_images_to_db()
-    print(t.time() - ini)
+    load_images_to_db(name_entrada, cpf_entrada)
+    print('duracao: %f' % (t.time() - ini))
     print('Terminado Load')
 
 
 if __name__ == '__main__':
-    # print('Iniciando')
-    # if os.path.isfile(ut.MODELFILE) is False:
-    #     with open(ut.MODELFILE, "a") as arq:
-    #         arq.close()
-    # print('Atualizando base de dados')
-    # atualize_db()
+    print('Iniciando')
+    if os.path.isfile(ut.MODELFILE) is False:
+        with open(ut.MODELFILE, "a") as arq:
+            arq.close()
+    print('Atualizando base de dados')
+    atualize_db(name_entrada="", cpf_entrada="")
     ini = t.time()
     print('Treinamento')
     train()

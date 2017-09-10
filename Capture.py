@@ -6,6 +6,7 @@ import Utils as ut
 import time as t
 import shutil as s
 import re
+import geradorcpf
 
 frontal_face = cv2.CascadeClassifier(ut.CASCADEPATHFRONTALFACE)
 
@@ -46,7 +47,7 @@ def detect_faces(img):
 
 
 def input_name():
-    dirs = os.listdir(ut.NEWIMAGESPATH)
+    dirs = os.listdir(ut.IMAGESPATH)
     directory = [re.split(r'(\d+)', sa) for sa in dirs]
     print(directory)
     index = 0
@@ -59,9 +60,19 @@ def input_name():
 
 def capture():
     i = 0
+    flag = True
     name = input('Nome: ')
 
-    new_path = ut.NEWIMAGESPATH + '/' + name
+    while flag:
+        cpf = input('CPF: ')
+        if cpf.isdigit() is False:
+            print("CPF deve conter somente números:")
+            continue
+        if len(cpf) == 0:
+            cpf = geradorcpf.gerar()
+        flag = False
+
+    new_path = ut.IMAGESPATHPARTIAL + '/' + name
     if not os.path.exists(new_path):
         os.makedirs(new_path)
     cam = cv2.VideoCapture(0)
@@ -87,7 +98,7 @@ def capture():
             cv2.imwrite(new_path + '/' + name + '_' + str(i) + '.jpg', frame)
             i += 1
             t1 = t.time()
-    return time_exceeded
+    return time_exceeded, name, cpf
 
 
 if __name__ == '__main__':

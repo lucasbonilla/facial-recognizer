@@ -7,6 +7,7 @@ import Utils as ut
 model = cv2.face.createLBPHFaceRecognizer()
 model.load(ut.MODELFILE)
 
+
 # Retorna o nome e a distância da predição.
 # Menor valor melhor a confiança
 def predict(face):
@@ -15,7 +16,7 @@ def predict(face):
     return result, conf
 
 
-def main():
+def main1():
     cam = cv2.VideoCapture(0)
     while True:
         ret, face = cam.read()
@@ -27,4 +28,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main1()
