@@ -5,14 +5,12 @@ import cv2
 import Capture
 import FaceDB
 import Utils as ut
-
-model = cv2.face.createLBPHFaceRecognizer()
-model.load(ut.MODELFILE)
+import yaml
 
 
 # Retorna o nome e a distância da predição.
 # Menor valor melhor a confiança
-def predict(face):
+def predict(face, model):
     prediction, conf = model.predict(face)
     result = FaceDB.Label.get(FaceDB.Label.id == prediction).name
     return result, conf
@@ -24,7 +22,11 @@ def main():
     recognize = True
     while True:
         cam = cv2.VideoCapture(ut.CAMURL)
+        print("abrindo")
+        model = cv2.face.createLBPHFaceRecognizer()
+        model.load(ut.MODELFILE)
         while True:
+            print("Reconhecendo")
             ret, full_img = cam.read()
 
             rects, captured = Capture.detect_faces(
@@ -35,7 +37,7 @@ def main():
                 # cv2.imshow("ENTRADA", cv2.flip(face, 1))
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
-                res, conf = predict(face)  # Predição
+                res, conf = predict(face, model)  # Predição
                 if conf <= 90:  # Confiança menor igual que 90 é um positivo
                     print("Nome: %s, Confiança: %s" % (res, conf))
                     if last != res:
@@ -55,8 +57,6 @@ def main():
                     cv2.imshow(res, full_img)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
-
-                    continue
                 else:  # Confiança maior que 60 pode ser um positivo mas não é confiável
                     # print("Nome: %s, Confiança: %s" % (res, conf))
                     confiability.append((res, conf, t.time()))
@@ -75,7 +75,9 @@ def main():
                         confiability.clear()
                         break
 
+        yaml.dump(model)
         cv2.destroyAllWindows()
+
 
         # Se não reconheceu
         if not recognize:

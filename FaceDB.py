@@ -40,12 +40,14 @@ def load_images_to_db(name_entrada, cpf_entrada):
         for sub_dir_name in dir_names:
             subject_path = os.path.join(dir_name, sub_dir_name)
             if len(name_entrada) is 0:
-                name_entrada = sub_dir_name
+                name = sub_dir_name
+            else:
+                name = name_entrada
             if len(cpf_entrada) is 0:
                 cpf = geradorcpf.gerar()
             else:
                 cpf = cpf_entrada
-            label, p = Label.get_or_create(name=name_entrada, cpf=cpf)
+            label, p = Label.get_or_create(name=name, cpf=cpf)
             label.save()
             for filename in os.listdir(subject_path):
                 finalpath = ut.IMAGESPATHFINAL+'/'+sub_dir_name
