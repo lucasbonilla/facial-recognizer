@@ -43,18 +43,34 @@ def load_images_to_db(name_entrada, cpf_entrada):
                 name = sub_dir_name
             else:
                 name = name_entrada
-            if len(cpf_entrada) is 0:
+            if len(cpf_entrada) == 0:
                 cpf = geradorcpf.gerar()
             else:
                 cpf = cpf_entrada
+            err = 11 - len(cpf)
+            if err != 0:
+                cpf = err * "0" + cpf
+            print(cpf)
             label, p = Label.get_or_create(name=name, cpf=cpf)
             label.save()
+            create = True
             for filename in os.listdir(subject_path):
                 finalpath = ut.IMAGESPATHFINAL+'/'+sub_dir_name
                 path = os.path.abspath(os.path.join(finalpath, filename))
                 image, p = Image.get_or_create(path=path, label=label)
-                if not os.path.exists(finalpath):
-                    os.makedirs(finalpath)
+                if create:
+                    if not os.path.exists(finalpath):
+                        os.makedirs(finalpath)
+                    else:
+                        i = 1
+                        while True:
+                            if not os.path.exists(finalpath + str(i)):
+                                os.makedirs(finalpath + str(i))
+                                finalpath = finalpath + str(i)
+                                break
+                            else:
+                                i += 1
+                    create = False
                 shutil.move(subject_path+'/'+filename, finalpath+'/'+filename)
                 image.save()
             shutil.rmtree(subject_path)
@@ -84,7 +100,7 @@ class BaseModel(peewee.Model):
 
 class Label(BaseModel):
     name = peewee.CharField()
-    cpf = peewee.IntegerField()
+    cpf = peewee.CharField()
 
     def persist(self):
         path = os.path.join(ut.IMAGESPATHPARTIAL, self.name)
@@ -124,6 +140,11 @@ def atualize_db(name_entrada, cpf_entrada):
 
 
 if __name__ == '__main__':
+    # teste = Label.get(Label.name == "Usuário Teste 222")
+    # if Label.select().where(Label.name == 'charlie').exists():
+    #     print('sim')
+    # else:
+    #     print('nao')
     print('Iniciando')
     if os.path.isfile(ut.MODELFILE) is False:
         with open(ut.MODELFILE, "a") as arq:

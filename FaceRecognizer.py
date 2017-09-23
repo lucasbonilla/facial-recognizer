@@ -12,7 +12,7 @@ import yaml
 # Menor valor melhor a confiança
 def predict(face, model):
     prediction, conf = model.predict(face)
-    result = FaceDB.Label.get(FaceDB.Label.id == prediction).name
+    result = FaceDB.Label.get(FaceDB.Label.id == prediction)
     return result, conf
 
 
@@ -22,11 +22,9 @@ def main():
     recognize = True
     while True:
         cam = cv2.VideoCapture(ut.CAMURL)
-        print("abrindo")
         model = cv2.face.createLBPHFaceRecognizer()
         model.load(ut.MODELFILE)
         while True:
-            print("Reconhecendo")
             ret, full_img = cam.read()
 
             rects, captured = Capture.detect_faces(
@@ -39,22 +37,23 @@ def main():
                     break
                 res, conf = predict(face, model)  # Predição
                 if conf <= 90:  # Confiança menor igual que 90 é um positivo
-                    print("Nome: %s, Confiança: %s" % (res, conf))
+                    print("Nome: %s, Confiança: %s" % (res.name, conf))
                     if last != res:
                         last = res
                     # print('Flush')
                     confiability.clear()
 
                     # for i in range(10):
-                    path_recognized = ut.IMAGESPATHFINAL + "/" + res + "/" + res + "_0" + \
-                                      ".jpg"
+                    # path_recognized = ut.IMAGESPATHFINAL + "/" + res + "/" + res + "_0" + \
+                    #                   ".jpg"
                     # print(path_recognized)
                     # recognized = cv2.imread(path_recognized)
-                    cv2.putText(full_img, res, (rects[0], rects[1] - 10),
-                                cv2.FONT_HERSHEY_PLAIN, 2, (0, 153, 255), 1)
+                    cv2.putText(full_img, res.name+' '+str(res.cpf),
+                                (rects[0], rects[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1,
+                                (0, 153, 255), 1)
                     cv2.rectangle(full_img, (rects[0], rects[1]), (rects[0]+rects[2],
                                   rects[1]+rects[3]), (0, 153, 255), 2)
-                    cv2.imshow(res, full_img)
+                    cv2.imshow(res.name, full_img)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
                 else:  # Confiança maior que 60 pode ser um positivo mas não é confiável
@@ -69,7 +68,7 @@ def main():
                         confiability.clear()
                     # Se reconheceu 10 imagens seguidas com confiabilidade menor que 60 por dez vezes seguidas
                     # entende-se que a base não conhece a face
-                    if len(confiability) > 20:
+                    if len(confiability) > 30:
                         # print("I don't know you...")
                         recognize = False  # Seta um False
                         confiability.clear()
