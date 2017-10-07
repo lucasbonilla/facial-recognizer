@@ -50,29 +50,31 @@ def load_images_to_db(name_entrada, cpf_entrada):
             err = 11 - len(cpf)
             if err != 0:
                 cpf = err * "0" + cpf
-            print(cpf)
-            label, p = Label.get_or_create(name=name, cpf=cpf)
-            label.save()
-            create = True
+
+            if Label.select().where((Label.cpf == cpf)).exists():
+                label = Label.select().where((Label.name == name) & (Label.cpf == cpf))
+            else:
+                label, p = Label.get_or_create(name=name, cpf=cpf)
+                label.save()
+
+            i = 1
+            while os.path.exists(ut.IMAGESPATHFINAL + '/' + sub_dir_name):
+                print("oi")
+                sub_dir_name += "_" + str(i)
+
+            finalpath = ut.IMAGESPATHFINAL + '/' + sub_dir_name
+
             for filename in os.listdir(subject_path):
-                finalpath = ut.IMAGESPATHFINAL+'/'+sub_dir_name
                 path = os.path.abspath(os.path.join(finalpath, filename))
+                print(path)
+                if not os.path.exists(finalpath):
+                    print("Criando path no else "+finalpath)
+                    os.makedirs(finalpath)
+
                 image, p = Image.get_or_create(path=path, label=label)
-                if create:
-                    if not os.path.exists(finalpath):
-                        os.makedirs(finalpath)
-                    else:
-                        i = 1
-                        while True:
-                            if not os.path.exists(finalpath + str(i)):
-                                os.makedirs(finalpath + str(i))
-                                finalpath = finalpath + str(i)
-                                break
-                            else:
-                                i += 1
-                    create = False
-                shutil.move(subject_path+'/'+filename, finalpath+'/'+filename)
+                shutil.move(subject_path + '/' + filename, finalpath + '/' + filename)
                 image.save()
+
             shutil.rmtree(subject_path)
 
 
