@@ -51,14 +51,16 @@ def load_images_to_db(name_entrada, cpf_entrada):
             if err != 0:
                 cpf = err * "0" + cpf
 
+            create = False
             if Label.select().where((Label.cpf == cpf)).exists():
-                label = Label.select().where((Label.name == name) & (Label.cpf == cpf))
+                label = Label.select().where((Label.cpf == cpf))
             else:
                 label, p = Label.get_or_create(name=name, cpf=cpf)
                 label.save()
+                create = True
 
             i = 1
-            while os.path.exists(ut.IMAGESPATHFINAL + '/' + sub_dir_name):
+            while os.path.exists(ut.IMAGESPATHFINAL + '/' + sub_dir_name) and create:
                 print("oi")
                 sub_dir_name += "_" + str(i)
 
